@@ -1,0 +1,6 @@
+# Text Editor
+/.vscode
+
+# Python
+/**/__pycache__
+/**/*.pyc
