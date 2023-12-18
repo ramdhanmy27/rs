@@ -1,12 +1,12 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "502059ad3e623ea36bf37055b47a11c116266ac5bfd2d9fc187dc04835cfd1fb"
+            "sha256": "e78c35bc2e53c9dfe516beef9eeff74a228644e64a7e32a5f955bdcb11d8bd0a"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_full_version": "3.11.5",
-            "python_version": "3.11"
+            "python_full_version": "3.12.1",
+            "python_version": "3.12"
         },
         "sources": [
             {
@@ -17,6 +17,13 @@
         ]
     },
     "default": {
+        "apyori": {
+            "hashes": [
+                "sha256:e2e6ffcf14732b1b1432608cf83b81ac538243387b0458eb7d9296e770d462ec"
+            ],
+            "index": "pypi",
+            "version": "==1.1.2"
+        },
         "numpy": {
             "hashes": [
                 "sha256:06fa1ed84aa60ea6ef9f91ba57b5ed963c3729534e6e54055fc151fad0423f0a",
