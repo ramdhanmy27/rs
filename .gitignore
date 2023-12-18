@@ -1,5 +1,6 @@
 # Text Editor
 /.vscode
+*.code-workspace
 
 # Python
 /**/__pycache__
