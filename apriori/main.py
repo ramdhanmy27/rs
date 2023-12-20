@@ -1,6 +1,7 @@
 import pandas as pd
 from apyori import apriori
 from tqdm import tqdm
+import csv
 
 # Load data
 data_learning = pd.read_csv("./dataset/lesson_learning_records.transformed.csv")
@@ -22,10 +23,10 @@ for i in tqdm(range(len(data_learning))):
 total_transactions = len(transactions)
 
 # Progress bar setup
-from progressbar import ProgressBar, Percentage
+from tqdm import tqdm
 
 # Create progress bar
-pbar = ProgressBar(maxval=total_transactions, progress_char="▓", empty_char="░")
+pbar = tqdm(total=len(data_learning))
 
 # Run Apriori algorithm (Parameterization with lift> 1.5, confidence> 0.2 and support> 0.01)
 rules = apriori(transactions, min_support=0.01, min_confidence=0.2, min_lift=1.5)
