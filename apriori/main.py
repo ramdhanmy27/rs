@@ -9,7 +9,7 @@ data_learning = pd.read_csv("./dataset/lesson_learning_records.transformed.csv")
 # Baca data lesson
 data_lesson = pd.read_csv("./dataset/lessons.preprocessed.csv")
 
-# Gabungkan data lesson_learning dan data_lesson berdasarkan Lesson ID
+# Gabungkan data lesson_learning dan data_lesson berdasarkan Lesson ID ; note pada file csv lesson.preprocessed.csv pada row pertama ('ID') dirubah menjadi ('Lesson ID)
 merged_data = pd.merge(data_learning, data_lesson, on='Lesson ID')
 
 # Filter data yang telah selesai (Completed=True)
@@ -19,9 +19,9 @@ completed_data = merged_data[merged_data['Completed'] == True]
 transactions = completed_data.groupby('User ID')['Title'].apply(lambda x: list(map(str, x))).tolist()
 
 # Apriori Algorithm
-min_support = 0.1
-min_confidence = 0.7
-min_lift = 1.0
+min_support = 0.01
+min_confidence = 0.2
+min_lift = 1.5
 
 association_rules = apriori(
     transactions,
