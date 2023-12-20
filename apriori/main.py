@@ -3,53 +3,46 @@ from apyori import apriori
 from tqdm import tqdm
 import csv
 
-# Load data
+# Baca data lesson_learning
 data_learning = pd.read_csv("./dataset/lesson_learning_records.transformed.csv")
+
+# Baca data lesson
 data_lesson = pd.read_csv("./dataset/lessons.preprocessed.csv")
 
-# Get lesson IDs
-lesson_ids = data_lesson["Lesson ID"].tolist()
+# Gabungkan data lesson_learning dan data_lesson berdasarkan Lesson ID
+merged_data = pd.merge(data_learning, data_lesson, on='Lesson ID')
 
-# Create transaction list
-transactions = []
-for i in tqdm(range(len(data_learning))):
-    transaction = []
-    for j in range(len(lesson_ids)):
-        if data_learning.loc[i, "Lesson ID"] == lesson_ids[j]:
-            transaction.append(lesson_ids[j])
-    transactions.append(transaction)
+# Filter data yang telah selesai (Completed=True)
+completed_data = merged_data[merged_data['Completed'] == True]
 
-# Total transactions
-total_transactions = len(transactions)
+# Ambil kolom Lesson ID sebagai string
+transactions = completed_data.groupby('User ID')['Title'].apply(lambda x: list(map(str, x))).tolist()
 
-# Progress bar setup
-from tqdm import tqdm
+# Apriori Algorithm
+min_support = 0.1
+min_confidence = 0.7
+min_lift = 1.0
 
-# Create progress bar
-pbar = tqdm(total=len(data_learning))
+association_rules = apriori(
+    transactions,
+    min_support=min_support,
+    min_confidence=min_confidence,
+    min_lift=min_lift,
+    min_length=2,  # Set to 2 for rules with exactly two items
+    max_length=2,
+)
 
-# Run Apriori algorithm (Parameterization with lift> 1.5, confidence> 0.2 and support> 0.01)
-rules = apriori(transactions, min_support=0.01, min_confidence=0.2, min_lift=1.5)
+# Simpan hasil ke CSV
+output_file = "./output/association_rules_output.csv"
+with open(output_file, 'w', newline='') as csvfile:
+    csv_writer = csv.writer(csvfile)
+    csv_writer.writerow(['Lesson A', 'Lesson B', 'Support', 'Confidence', 'Lift'])
 
-# Get results
-results = []
-for rule in rules:
-    lesson_a = rule.items[0][0]
-    lesson_b = rule.items[1][0]
-    support = rule.support
-    confidence = rule.confidence
-    lift = rule.lift
-    results.append((lesson_a, lesson_b, support, confidence, lift))
+    for rule in tqdm(association_rules):
+        items = [item for item in rule.items]
+        if len(items) == 2:
+            support = rule.support
+            confidence = rule.ordered_statistics[0].confidence if rule.ordered_statistics else None
+            lift = rule.ordered_statistics[0].lift if rule.ordered_statistics else None
 
-    # Update progress bar
-    pbar.update()
-
-# Write results to CSV file
-with open("./output/association_rules.csv", "w") as f:
-    writer = csv.writer(f)
-    writer.writerow(["Lesson A", "Lesson B", "Support", "Confidence", "Lift"])
-    for result in results:
-        writer.writerow(result)
-
-# Close progress bar
-pbar.close()
+            csv_writer.writerow([items[0], items[1], support, confidence, lift])
