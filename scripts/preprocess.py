@@ -5,7 +5,9 @@ import pandas as pd
 dataset_path = './dataset'
 entities_csv = dataset_path + '/entities.csv'
 lessons_csv = dataset_path + '/lessons.csv'
+memberships_csv = dataset_path + '/memberships.csv'
 shelf_items_csv = dataset_path + '/shelf_items.csv'
+users_csv = dataset_path + '/users.csv'
 llrs_csv = dataset_path + '/lesson_learning_records.csv'
 views_csv = dataset_path + '/views.csv'
 
@@ -20,12 +22,16 @@ trim_whitespaces = lambda val: val.strip() if type(val) == str else None
 
 # clean up entities
 df = pd.read_csv(entities_csv)
+df = df.drop('Country Code', axis=1)
+df = df.drop('Region Code', axis=1)
+df = df.drop('Timezone', axis=1)
+df = df.drop('Verticals', axis=1)
 removed_rows = df['Name'].str.contains('test', case=False, regex=False)
 df.loc[~removed_rows].to_csv(dataset_path + '/entities.preprocessed.csv', index=False, encoding='utf-8')
 
 df = df.loc[removed_rows]
 df.to_csv(dataset_path + '/entities.removed.csv', index=False, encoding='utf-8')
-removed_brands_ids = df.loc[df['Type'] == 'Brand']['ID'].array
+removed_brand_ids = df.loc[df['Type'] == 'Brand']['ID'].array
 removed_outlet_ids = df.loc[df['Type'] == 'Outlet']['ID'].array
 
 # clean up lessons
@@ -39,7 +45,7 @@ removed_rows = (
     df['Owner ID'].isna() &
     df['Title'].str.contains('test', case=False, regex=False)
   ) |
-  ((df['Owner Type'] == 'Outlet') & df['Owner ID'].isin(removed_brands_ids)) |
+  ((df['Owner Type'] == 'Outlet') & df['Owner ID'].isin(removed_brand_ids)) |
   ((df['Owner Type'] == 'Brand') & df['Owner ID'].isin(removed_outlet_ids))
 )
 removed_df = df.loc[removed_rows]
@@ -90,3 +96,37 @@ df = df.drop('Created At', axis=1)
 df = df.groupby(['User ID', 'Lesson ID']).size().reset_index(name='Counts')
 df = df.sort_values(['User ID', 'Lesson ID'])
 df.to_csv(dataset_path + '/views.transformed.csv', index=False, encoding='utf-8')
+
+# clean up memberships
+df = pd.read_csv(memberships_csv)
+df = df.drop('Make Drinks', axis=1)
+df = df.drop('Interact With Customer', axis=1)
+df = df.drop('Role', axis=1)
+df = df.drop('Created At', axis=1)
+
+removed_rows = (
+  ((df['Source Type'] == 'Brand') & df['Source ID'].isin(removed_brand_ids)) |
+  ((df['Source Type'] == 'Outlet') & df['Source ID'].isin(removed_outlet_ids))
+)
+removed_df = df.loc[removed_rows]
+removed_df.to_csv(dataset_path + '/memberships.removed.csv', index=False, encoding='utf-8')
+removed_user_ids = removed_df['User ID'].array
+
+df = df.loc[~removed_rows]
+df.to_csv(dataset_path + '/memberships.preprocessed.csv', index=False, encoding='utf-8')
+
+# clean up users
+df = pd.read_csv(users_csv)
+df = df.drop('First Name', axis=1)
+df = df.drop('Last Name', axis=1)
+df = df.drop('Gender', axis=1)
+df = df.drop('DOB', axis=1)
+df = df.drop('Country Code', axis=1)
+df = df.drop('Region Code', axis=1)
+
+removed_rows = df['User ID'].isin(removed_user_ids)
+removed_df = df.loc[removed_rows]
+removed_df.to_csv(dataset_path + '/users.removed.csv', index=False, encoding='utf-8')
+
+df = df.loc[~removed_rows]
+df.to_csv(dataset_path + '/users.preprocessed.csv', index=False, encoding='utf-8')
