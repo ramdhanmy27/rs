@@ -26,6 +26,7 @@ df = df.drop('Country Code', axis=1)
 df = df.drop('Region Code', axis=1)
 df = df.drop('Timezone', axis=1)
 df = df.drop('Verticals', axis=1)
+df['Parent ID'] = df['Parent ID'].fillna(0.0).astype(int)
 removed_rows = df['Name'].str.contains('test', case=False, regex=False)
 df.loc[~removed_rows].to_csv(dataset_path + '/entities.preprocessed.csv', index=False, encoding='utf-8')
 
